@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+:root {
+  --tw-bg-opacity: 1;
+  --bg-primary: #f1f1f1;
+  --bg-primary-lighter: #f8f8f8;
+}
+
+/* Global body styling */
+body {
+  background-color: var(--bg-primary);
+  @apply font-inter text-base leading-relaxed;
+}
+
+
+.button-primary {
+  @apply bg-orange-500 hover:bg-orange-700 text-white font-bold ml-2 py-2 px-4 rounded;
+}
+
+.button-menus {
+  @apply bg-orange-500 hover:bg-orange-700 text-white font-semibold tracking-tight rounded px-3 py-1 text-base;
+}
