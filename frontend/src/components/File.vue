@@ -1,5 +1,8 @@
 <script setup>
-import fileImage from "@/assets/File.svg"
+import { defineEmits } from 'vue';
+import fileImage from "@/assets/File.svg";
+import axios from 'axios';
+import { formatBytes } from '@/utility/utils';
 
 defineProps({
   id: {
@@ -18,9 +21,19 @@ defineProps({
     type: String,
     default: ''
   },
+});
 
-})
+const backendUri = import.meta.env.VITE_BASE_BACKEND_URI;
+const emit = defineEmits(['fileDeleted']);
 
+async function deleteFile(fileId) {
+  try {
+    await axios.delete(`${backendUri}/api/datafile/${fileId}`);
+    emit('fileDeleted', fileId);
+  } catch (error) {
+    console.error("Error deleting file: " + error);
+  }
+}
 </script>
 
 <template>
@@ -32,13 +45,13 @@ defineProps({
       <div class="flex justify-between">
         <div class="flex flex-col mt-1 max-h-16">
           <div>Name: {{ name }}</div>
-          <div>Size: {{ size }} bytes</div>
+          <div>Size: {{ formatBytes(size) }}</div>
         </div>
       </div>
     </div>
     <div class="flex justify-start items-center gap-1.5 underline text-orange-500 ">
       <RouterLink :to="`/files/${id}`" class="hover:text-orange-700">View</RouterLink>
-      <RouterLink to="#" class="hover:text-orange-700">Delete</RouterLink>
+      <button @click="() => deleteFile(id)" class="hover:text-orange-700">Delete</button>
       <RouterLink to="#" class="hover:text-orange-700">Move</RouterLink>
     </div>
   </div>

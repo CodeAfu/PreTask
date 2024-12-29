@@ -17,9 +17,9 @@ body {
 
 
 .button-primary {
-  @apply bg-orange-500 hover:bg-orange-700 text-white font-bold ml-2 py-2 px-4 rounded;
+  @apply bg-orange-500 hover:bg-orange-700 text-white font-bold ml-2 py-2 px-4 rounded shadow-sm;
 }
 
-.button-menus {
-  @apply bg-orange-500 hover:bg-orange-700 text-white font-semibold tracking-tight rounded px-3 py-1 text-base;
+.button-menu {
+  @apply bg-orange-500 hover:bg-orange-700 text-white font-semibold tracking-tight rounded shadow-sm px-3 py-1 text-base;
 }

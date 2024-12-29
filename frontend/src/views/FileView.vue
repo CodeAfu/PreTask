@@ -4,39 +4,60 @@ import { reactive, onMounted } from 'vue';
 import { useRoute, RouterLink } from 'vue-router';
 import PulseLoader from 'vue-spinner/src/PulseLoader.vue';
 import FileIcon from '@/components/FileIcon.vue';
-import fileImage from "@/assets/File.svg"
+import fileImage from "@/assets/File.svg";
+import ControlButton from '@/components/ControlButton.vue';
+
 
 const route = useRoute();
 const fileId = route.params.id;
-const backendUri = import.meta.env.VITE_BASE_BACKEND_URI
-const state = reactive( {
+const backendUri = import.meta.env.VITE_BASE_BACKEND_URI;
+const imageExtensions = ['.jpeg', '.jpg', '.png', '.gif'];
+
+const state = reactive({
   file: {},
   isLoading: true,
   imageUrl: null,
-})
-
+});
 
 onMounted(async () => {
   try {
     const { data } = await axios.get(`${backendUri}/api/datafile/${fileId}`);
     state.file = data;
 
-    if (['.jpeg', '.jpg', '.png', '.gif'].includes(state.file.extension.toLowerCase())) {
-      state.imageUrl = URL.createObjectURL(data.data);
+    if (imageExtensions.includes(state.file.extension.toLowerCase())) {
+      state.imageUrl = `data:image/${state.file.extension.slice(1)};base64,${data.data}`;
     }
   } catch (error) {
-    console.error("Error fetching file. " + error);
+    console.error("Error fetching file: " + error);
   } finally {
     state.isLoading = false;
   }
 });
 
+async function downloadFile() {
+  try {
+    const response = await axios.get(`${backendUri}/api/datafile/${fileId}/download`, {
+      responseType: 'blob',
+    });
 
+    const blob = new Blob([response.data], { type: response.headers['content-type'] });
+    const url = URL.createObjectURL(blob);
 
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = state.file.fileName || 'file';
+    link.click();
+
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Error downloading file. " + error);
+  }
+}
 </script>
 
+
 <template>
-  <div v-if="isLoading" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-transparent text-center">
+  <div v-if="state.isLoading" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-transparent text-center">
     <PulseLoader color="#F97316" />
   </div>
 
@@ -47,19 +68,29 @@ onMounted(async () => {
         Back
       </RouterLink>
       <div class="mt-6 grid grid-cols-4 gap-6">
-        <div class="col-span-1">
+        <div class="col-span-1 flex flex-col gap-2">
           <FileIcon :image="fileImage" :file="state.file" />
+          <h4 class="text-xl font-semibold">Controls</h4>
+          <div class="flex items-center gap-2">
+            <ControlButton text="Download" :onclick="downloadFile" />
+          </div>
         </div>
         <div class="col-span-3">
-          <h2 class="text-3xl font-bold">{{ state.file.fileName }}</h2>
-          <p class="text-lg">File size: {{ state.file.fileSize }} bytes</p>
-          <p class="text-lg">File extension: {{ state.file.extension }}</p>
-          <div v-if="state.file.extension === '.jpeg'">
-            <img :src="imageUrl" class="object-cover" alt="file" />
+          <div class="bg-white shadow-md flex flex-wrap md:justify-start justify-center items-center gap-6 py-4 px-6 border-orange-50">
+            <div v-if="state.file.extension && imageExtensions.includes(state.file.extension.toLowerCase())" 
+              class="w-full"
+            >
+              <img :src="state.imageUrl" class="mx-auto object-contain" alt="Image" />
+            </div>
+            <div v-else-if="state.file.extension && state.file.extension.toLowerCase() === '.pdf'" class="w-full">
+              <iframe :src="`data:application/pdf;base64,${state.file.data}`" width="100%" height="800"></iframe>
+            </div>
+            <div v-else class="w-full">
+              <p>File Type is unreadable</p>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-
 </template>

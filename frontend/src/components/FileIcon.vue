@@ -1,4 +1,5 @@
 <script setup>
+import { formatBytes } from '@/utility/utils';
 defineProps({
   image: {
     type: String,
@@ -8,15 +9,15 @@ defineProps({
     type: Object,
     required: true,
   },
-})
+});
 </script>
 
 <template>
-  <div class="flex justify-center items-center flex-col border-2 border-orange-500">
+  <div class="flex flex-col items-center justify-center bg-orange-50 rounded-md shadow-md p-4">
     <img :src="image" class="object-cover" alt="file" />
     <div className="flex flex-col w-full p-3 justify-start items-start">
       <p>File Name: {{ file.fileName }}</p>
-      <p>Size: {{ file.fileSize }} bytes</p>
+      <p>Size: {{ formatBytes(file.fileSize) }}</p>
       <p>Extension: {{ file.extension }}</p>
     </div>
   </div>

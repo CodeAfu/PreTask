@@ -22,6 +22,9 @@ onMounted(async () => {
   }
 })
 
+function removeFile(deletedFileId) {
+  files.value = files.value.filter(file => file.id !== deletedFileId);
+}
 </script>
 
 <template>
@@ -34,7 +37,7 @@ onMounted(async () => {
       </div>
       <div v-else class="w-full flex flex-col gap-3">
         <SearchBar />
-        <FileRegion :files="files" />
+        <FileRegion :files="files" @fileDeleted="removeFile" />
       </div>
     </div>
   </div>

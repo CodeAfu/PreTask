@@ -8,7 +8,7 @@ const searchQuery = ref('');
     <input
     v-model="searchQuery"
     type="text"
-    class="border rounded p-2 w-1/2"
+    class="border rounded p-2 shadow-sm w-1/2"
     placeholder="Enter name of file"
   />
 

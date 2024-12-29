@@ -15,8 +15,8 @@ defineProps({
 <template>
   <button
     type="button"
-    onclick=onclick
-    class="button-menus"
+    @click=onclick
+    class="button-menu"
   >
   {{ text }}
   </button>
