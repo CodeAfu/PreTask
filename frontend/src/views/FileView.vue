@@ -17,6 +17,7 @@ const backendUri = import.meta.env.VITE_BASE_BACKEND_URI;
 const isEditing = ref(false);
 const newFileName = ref('');
 const editError = ref('');
+const isRefreshing = ref(false);
 
 const state = reactive({
   file: {},
@@ -67,7 +68,7 @@ async function editFile() {
   try {
     editError.value = '';
 
-    if (!newFileName.value) {
+    if (!newFileName.value.trim()) {
       editError.value = "Filename cannot be empty.";
       return;
     }
@@ -76,15 +77,30 @@ async function editFile() {
     const nameWithoutExt = newFileName.value.replace(extension, '');
     const finalFileName = nameWithoutExt + extension;
     
+    isRefreshing.value = true;
     const response = await axios.put(`${backendUri}/api/datafile/${fileId}`, {
       fileName: finalFileName
     });
 
     state.file = response.data;
     isEditing.value = false;
+
+    const { data } = await axios.get(`${backendUri}/api/datafile/${fileId}`);
+    state.file = data;
+
+    if (imageExtensions.includes(state.file.extension.toLowerCase())) {
+      state.imageUrl = `data:image/${state.file.extension.slice(1)};base64,${data.data}`;
+    }
+    
+    if (state.file.extension.toLowerCase() === '.txt') {
+      decodeText.value = atob(state.file.data);
+    }
+
   } catch (error) {
     console.error("Error updating filename: ", error);
     editError.value = "Failed to update filename. Please try again.";
+  } finally {
+    isRefreshing.value = false;
   }
 }
 
@@ -145,11 +161,17 @@ async function downloadFile() {
                 v-model="newFileName"
                 class="border rounded px-2 py-1"
                 :class="{ 'border-red-500': editError }"
+                :disabled="isRefreshing"
               />
               <p v-if="editError" class="text-red-500 text-sm">{{ editError }}</p>
               <div class="flex items-center flex-wrap gap-2">
-                <ControlButton text="Confirm" :onclick="editFile" />
-                <ControlButton text="Cancel" :onclick="cancelEdit" />
+                <div v-if="isRefreshing" class="text-orange-500">
+                  <PulseLoader :loading="true" :color="'#F97316'" :size="'8px'" />
+                </div>
+                <template v-else>
+                  <ControlButton text="Confirm" :onclick="editFile" />
+                  <ControlButton text="Cancel" :onclick="cancelEdit" />
+                </template>
               </div>
             </div>
           </div>
