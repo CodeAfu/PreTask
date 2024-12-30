@@ -1,6 +1,22 @@
 <script setup>
 import { ref } from 'vue';
+
+defineProps({
+  modelValue: {
+    type: String,
+    default: ''
+  }
+});
+
+const emit = defineEmits(['update:modelValue', 'search']);
+
 const searchQuery = ref('');
+
+function onSearch() {
+  emit('search');
+  emit('update:modelValue', searchQuery.value);
+}
+
 </script>
 
 <template>
@@ -11,11 +27,7 @@ const searchQuery = ref('');
     class="border rounded p-2 shadow-sm w-1/2"
     placeholder="Enter name of file"
   />
-
-  <button
-    onclick="alert('Remember to implement search!')"
-    class="button-primary"
-  >
+  <button @click="onSearch" class="button-primary">
     Search
   </button>
   </div>

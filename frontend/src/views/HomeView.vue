@@ -8,11 +8,15 @@ import PulseLoader from "vue-spinner/src/PulseLoader.vue";
 
 const files = ref([]);
 const isLoading = ref(true);
+const searchQuery = ref('');
 const backendUri = import.meta.env.VITE_BASE_BACKEND_URI
 
-async function fetchFiles() {
+async function fetchFiles(query = '') {
   try {
-    const response = await axios.get(`${backendUri}/api/datafile`);
+    const endpoint = query
+      ? `${backendUri}/api/datafile/search?filename=${query}`
+      : `${backendUri}/api/datafile`;
+    const response = await axios.get(endpoint);
     files.value = response.data;
   } catch (error) {
     console.error('Error fetching files. ' + error);
@@ -32,6 +36,10 @@ function removeFile(deletedFileId) {
 function handleFileUploaded(newFile) {
   files.value = [...files.value, newFile];
 }
+
+function handleSearch() {
+  fetchFiles(searchQuery.value)
+}
 </script>
 
 <template>
@@ -43,7 +51,7 @@ function handleFileUploaded(newFile) {
         <PulseLoader color="#F97316" />
       </div>
       <div v-else class="w-full flex flex-col gap-3">
-        <SearchBar />
+        <SearchBar v-model="searchQuery" @search="handleSearch" />
         <FileRegion 
           :files="files" 
           @fileDeleted="removeFile"

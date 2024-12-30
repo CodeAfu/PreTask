@@ -52,7 +52,6 @@ async function deleteFile(fileId) {
     <div class="flex justify-start items-center gap-1.5 underline text-orange-500 ">
       <RouterLink :to="`/files/${id}`" class="hover:text-orange-700">View</RouterLink>
       <button @click="() => deleteFile(id)" class="hover:text-orange-700">Delete</button>
-      <RouterLink to="#" class="hover:text-orange-700">Move</RouterLink>
     </div>
   </div>
 
