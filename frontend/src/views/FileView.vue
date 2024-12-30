@@ -1,6 +1,6 @@
 <script setup>
 import axios from 'axios';
-import { reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, watchEffect } from 'vue';
 import { useRoute, RouterLink } from 'vue-router';
 import PulseLoader from 'vue-spinner/src/PulseLoader.vue';
 import FileIcon from '@/components/FileIcon.vue';
@@ -9,6 +9,7 @@ import ControlButton from '@/components/ControlButton.vue';
 
 
 const route = useRoute();
+const decodeText = ref('');
 const fileId = route.params.id;
 const backendUri = import.meta.env.VITE_BASE_BACKEND_URI;
 const imageExtensions = ['.jpeg', '.jpg', '.png', '.gif'];
@@ -17,6 +18,12 @@ const state = reactive({
   file: {},
   isLoading: true,
   imageUrl: null,
+});
+
+watchEffect(() => {
+  if (state.file.extension && state.file.extension.toLowerCase() === '.txt') {
+    decodeText.value = atob(state.file.data);
+  }
 });
 
 onMounted(async () => {
@@ -32,7 +39,7 @@ onMounted(async () => {
   } finally {
     state.isLoading = false;
   }
-});
+}); 
 
 async function downloadFile() {
   try {
@@ -84,6 +91,9 @@ async function downloadFile() {
             </div>
             <div v-else-if="state.file.extension && state.file.extension.toLowerCase() === '.pdf'" class="w-full">
               <iframe :src="`data:application/pdf;base64,${state.file.data}`" width="100%" height="800"></iframe>
+            </div>
+            <div v-else-if="state.file.extension && state.file.extension.toLowerCase() === '.txt'" class="w-full">
+              <div>{{ decodeText }}</div>
             </div>
             <div v-else class="w-full">
               <p>File Type is unreadable</p>
