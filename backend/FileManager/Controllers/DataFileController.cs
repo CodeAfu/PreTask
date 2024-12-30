@@ -119,8 +119,8 @@ public class DataFileController : ControllerBase
     public async Task<IActionResult> DownloadFile(string id)
     {
         var filter = Builders<DataFile>.Filter.Eq(x => x.Id, id);
-        var dataFile = await _dataFiles.Find(filter).FirstOrDefaultAsync();
 
+        var dataFile = await _dataFiles.Find(filter).FirstOrDefaultAsync();
         if (dataFile == null)
         {
             return NotFound("File not found");
