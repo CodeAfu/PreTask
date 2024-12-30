@@ -68,12 +68,16 @@ public class DataFileController : ControllerBase
         using var memoryStream = new MemoryStream();
         await file.CopyToAsync(memoryStream);
 
+        var fileHash = CalculateFileHash(memoryStream.ToArray());
+
         var dataFile = new DataFile
         {
             Data = memoryStream.ToArray(),
             FileName = file.FileName,
             Extension = Path.GetExtension(file.FileName),
             FileSize = file.Length,
+            UploadDate = DateTime.UtcNow,
+            FileHash = fileHash,
         };
 
         await _dataFiles.InsertOneAsync(dataFile);
@@ -91,12 +95,16 @@ public class DataFileController : ControllerBase
                 using var memoryStream = new MemoryStream();
                 await file.CopyToAsync(memoryStream);
 
+                var fileHash = CalculateFileHash(memoryStream.ToArray());
+
                 var dataFile = new DataFile
                 {
                     Data = memoryStream.ToArray(),
                     FileName = file.FileName,
                     Extension = Path.GetExtension(file.FileName),
                     FileSize = file.Length,
+                    UploadDate = DateTime.UtcNow,
+                    FileHash = fileHash,
                 };
 
                 await _dataFiles.InsertOneAsync(dataFile);
@@ -131,11 +139,42 @@ public class DataFileController : ControllerBase
         return Ok();
     }
 
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Put(string id, [FromBody] UpdateFileNameRequest request)
+    {
+        try
+        {
+            var filter = Builders<DataFile>.Filter.Eq(x => x.Id, id);
+            var update = Builders<DataFile>.Update.Set(x => x.FileName, request.FileName);
+
+            var result = await _dataFiles.UpdateOneAsync(filter, update);
+
+            if (result.MatchedCount == 0)
+            {
+                return NotFound($"File with ID {id} not found.");
+            }
+
+            return Ok(new { message = "Filename updated successfully" });
+        
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Internal Server Error: {ex.Message}");
+        }
+    }
+
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(string id)
     {
         var filter = Builders<DataFile>.Filter.Eq(x => x.Id, id);
         await _dataFiles.DeleteOneAsync(filter);
         return Ok();
+    }
+
+    private string CalculateFileHash(byte[] fileData)
+    {
+        using var sha256 = System.Security.Cryptography.SHA256.Create();
+        var hashBytes = sha256.ComputeHash(fileData);
+        return Convert.ToBase64String(hashBytes);
     }
 }

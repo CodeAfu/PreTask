@@ -23,4 +23,11 @@ public class DataFile
     
     [BsonElement("filesize")]
     public long FileSize { get; set; }
+
+    [BsonElement("uploadDate")]
+    public DateTime UploadDate { get; set; } = DateTime.UtcNow;
+
+    [BsonElement("fileHash")]
+    public string? FileHash { get; set; }
+
 }
