@@ -9,7 +9,7 @@ public class DataFile
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
     [BsonElement("_id")]
-    public string Id { get; set; }
+    public string Id { get; set; } = null!;
 
     [Required(ErrorMessage = "A File is required.")]
     [BsonElement("data")]
