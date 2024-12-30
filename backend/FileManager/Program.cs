@@ -35,6 +35,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseStaticFiles();
 
+app.UseCors(policy => 
+    policy.WithOrigins(builder.Configuration.GetSection("AllowedOrigins").Get<string[]>()!)
+          .AllowAnyMethod()
+          .AllowAnyHeader()
+);
+
 app.UseHttpsRedirection();
 app.MapControllers();
 
