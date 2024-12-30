@@ -1,18 +1,22 @@
 <script setup>
 import axios from 'axios';
 import { ref, reactive, onMounted, watchEffect } from 'vue';
-import { useRoute, RouterLink } from 'vue-router';
+import { useRoute, useRouter, RouterLink } from 'vue-router';
 import PulseLoader from 'vue-spinner/src/PulseLoader.vue';
 import FileIcon from '@/components/FileIcon.vue';
 import fileImage from "@/assets/File.svg";
 import ControlButton from '@/components/ControlButton.vue';
 
-
+const router = useRouter();
 const route = useRoute();
 const decodeText = ref('');
 const fileId = route.params.id;
 const backendUri = import.meta.env.VITE_BASE_BACKEND_URI;
 const imageExtensions = ['.jpeg', '.jpg', '.png', '.gif'];
+
+const isEditing = ref(false);
+const newFileName = ref('')
+const editError = ref('')
 
 const state = reactive({
   file: {},
@@ -40,6 +44,28 @@ onMounted(async () => {
     state.isLoading = false;
   }
 }); 
+
+async function deleteFile(fileId) {
+  try {
+    await axios.delete(`${backendUri}/api/datafile/${fileId}`);
+    router.push({ path: '/' });
+  } catch (error) {
+    console.error("Error deleting file: " + error);
+  }
+}
+
+async function triggerEdit() {
+  isEditing.value = !isEditing.value;
+  if (isEditing.value) {
+    newFileName.value = state.file.fileName;
+  } else {
+    editError.value = '';
+  }
+}
+
+async function editFile(fileId) {
+
+}
 
 async function downloadFile() {
   try {
@@ -78,8 +104,17 @@ async function downloadFile() {
         <div class="col-span-1 flex flex-col gap-2">
           <FileIcon :image="fileImage" :file="state.file" />
           <h4 class="text-xl font-semibold">Controls</h4>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center flex-wrap gap-2">
             <ControlButton text="Download" :onclick="downloadFile" />
+            <ControlButton text="Delete" :onclick="() => deleteFile(state.file.id)" />
+            <ControlButton text="Edit" :onclick="triggerEdit" />
+          </div>
+          <div v-if="isEditing">
+            <hr class="border-t-1 border-gray-500 mb-2">
+            <div class="flex items-center flex-wrap gap-2">
+              <ControlButton text="Confirm" />
+              <ControlButton text="Cancel" />
+            </div>
           </div>
         </div>
         <div class="col-span-3">
