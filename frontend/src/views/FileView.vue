@@ -15,8 +15,8 @@ const imageExtensions = ['.jpeg', '.jpg', '.png', '.gif'];
 const backendUri = import.meta.env.VITE_BASE_BACKEND_URI;
 
 const isEditing = ref(false);
-const newFileName = ref('')
-const editError = ref('')
+const newFileName = ref('');
+const editError = ref('');
 
 const state = reactive({
   file: {},
@@ -63,7 +63,7 @@ async function triggerEdit() {
   }
 }
 
-async function editFile(fileId) {
+async function editFile() {
   try {
     editError.value = '';
 
@@ -75,7 +75,7 @@ async function editFile(fileId) {
     const extension = state.file.extension;
     const nameWithoutExt = newFileName.value.replace(extension, '');
     const finalFileName = nameWithoutExt + extension;
-
+    
     const response = await axios.put(`${backendUri}/api/datafile/${fileId}`, {
       fileName: finalFileName
     });
@@ -136,11 +136,21 @@ async function downloadFile() {
             <ControlButton text="Delete" :onclick="() => deleteFile(state.file.id)" />
             <ControlButton text="Edit" :onclick="triggerEdit" />
           </div>
-          <div v-if="isEditing">
+          <div v-if="isEditing" class="mt-4">
             <hr class="border-t-1 border-gray-500 mb-2">
-            <div class="flex items-center flex-wrap gap-2">
-              <ControlButton text="Confirm" />
-              <ControlButton text="Cancel" />
+            <div class="flex flex-col gap-2">
+              <p class="text-base">Filename:</p>
+              <input 
+                type="text"
+                v-model="newFileName"
+                class="border rounded px-2 py-1"
+                :class="{ 'border-red-500': editError }"
+              />
+              <p v-if="editError" class="text-red-500 text-sm">{{ editError }}</p>
+              <div class="flex items-center flex-wrap gap-2">
+                <ControlButton text="Confirm" :onclick="editFile" />
+                <ControlButton text="Cancel" :onclick="cancelEdit" />
+              </div>
             </div>
           </div>
         </div>
