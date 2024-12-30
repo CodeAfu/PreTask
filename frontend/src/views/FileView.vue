@@ -11,8 +11,8 @@ const router = useRouter();
 const route = useRoute();
 const decodeText = ref('');
 const fileId = route.params.id;
-const backendUri = import.meta.env.VITE_BASE_BACKEND_URI;
 const imageExtensions = ['.jpeg', '.jpg', '.png', '.gif'];
+const backendUri = import.meta.env.VITE_BASE_BACKEND_URI;
 
 const isEditing = ref(false);
 const newFileName = ref('')
@@ -64,12 +64,39 @@ async function triggerEdit() {
 }
 
 async function editFile(fileId) {
+  try {
+    editError.value = '';
 
+    if (!newFileName.value) {
+      editError.value = "Filename cannot be empty.";
+      return;
+    }
+
+    const extension = state.file.extension;
+    const nameWithoutExt = newFileName.value.replace(extension, '');
+    const finalFileName = nameWithoutExt + extension;
+
+    const response = await axios.put(`${backendUri}/api/datafile/${fileId}`, {
+      fileName: finalFileName
+    });
+
+    state.file = response.data;
+    isEditing.value = false;
+  } catch (error) {
+    console.error("Error updating filename: ", error);
+    editError.value = "Failed to update filename. Please try again.";
+  }
+}
+
+async function cancelEdit() {
+  isEditing.value = false;
+  editError.value = '';
+  newFileName.value = state.file.fileName;
 }
 
 async function downloadFile() {
   try {
-    const response = await axios.get(`${backendUri}/api/datafile/${fileId}/download`, {
+    const response = await axios.get(`${backendUri}/api/datafile/download/${fileId}`, {
       responseType: 'blob',
     });
 
@@ -78,7 +105,7 @@ async function downloadFile() {
 
     const link = document.createElement('a');
     link.href = url;
-    link.download = state.file.fileName || 'file';
+    link.download = state.file.fileName;
     link.click();
 
     URL.revokeObjectURL(url);
