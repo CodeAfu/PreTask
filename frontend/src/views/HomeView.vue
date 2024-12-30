@@ -8,10 +8,9 @@ import PulseLoader from "vue-spinner/src/PulseLoader.vue";
 
 const files = ref([]);
 const isLoading = ref(true);
-
 const backendUri = import.meta.env.VITE_BASE_BACKEND_URI
 
-onMounted(async () => {
+async function fetchFiles() {
   try {
     const response = await axios.get(`${backendUri}/api/datafile`);
     files.value = response.data;
@@ -20,10 +19,18 @@ onMounted(async () => {
   } finally {
     isLoading.value = false;
   }
+}
+
+onMounted(async () => {
+  fetchFiles();
 })
 
 function removeFile(deletedFileId) {
   files.value = files.value.filter(file => file.id !== deletedFileId);
+}
+
+function handleFileUploaded(newFile) {
+  files.value = [...files.value, newFile];
 }
 </script>
 
@@ -37,7 +44,11 @@ function removeFile(deletedFileId) {
       </div>
       <div v-else class="w-full flex flex-col gap-3">
         <SearchBar />
-        <FileRegion :files="files" @fileDeleted="removeFile" />
+        <FileRegion 
+          :files="files" 
+          @fileDeleted="removeFile"
+          @fileUploaded="handleFileUploaded" 
+        />
       </div>
     </div>
   </div>

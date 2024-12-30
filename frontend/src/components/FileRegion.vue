@@ -30,18 +30,13 @@ async function uploadFile(event) {
     });
 
     console.log("File uploaded successfully: ", response.data)
-    files.value.push(response.data);
+    emit('fileUploaded', response.data);
   } catch (error) {
     console.error("Error uploading file: " + error);
   }
 }
 
 function removeFile(deletedFileId) {
-  const index = files.value.findIndex(file => file.id === deletedFileId);
-  if (index !== -1) {
-    files.value.splice(index, 1);
-  }
-
   emit('fileDeleted', deletedFileId);
 }
 </script>
@@ -49,9 +44,17 @@ function removeFile(deletedFileId) {
 <template>
   <div class="mt-6 w-full flex justify-end gap-3">
     <input 
-      type="file" 
+      type="file"
+      id="fileInput" 
       @change="uploadFile"
+      style="display: none;"
     />
+    <label 
+      for="fileInput"
+      class="button-menu"
+    >
+      Upload
+    </label>
   </div>
 
   <div class="flex justify-center items-center w-full">
